@@ -1,0 +1,1 @@
+2024/09/23 08:59:18 [error] 29#29: *12 recv() failed (104: Connection reset by peer) while reading response header from upstream, client: 192.168.16.1, server: localhost, request: "POST /wp-admin/admin-ajax.php HTTP/1.1", upstream: "fastcgi://192.168.16.2:9000", host: "localhost:8080", referrer: "http://localhost:8080/wp-admin/about.php"
