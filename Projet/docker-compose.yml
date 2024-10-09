@@ -11,11 +11,16 @@ services:
           - node.role == manager
     volumes:
       - db_data:/var/lib/mysql
+    secrets:
+      - mysql_root_password
+      - mysql_user_password
+      - mysql_database  # Nouveau secret pour la base de données
+      - mysql_user  # Nouveau secret pour l'utilisateur
     environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "db_swarm"
-      MYSQL_USER: "swarm"
-      MYSQL_PASSWORD: "root"
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE_FILE: /run/secrets/mysql_database  # Secret pour le nom de la DB
+      MYSQL_USER_FILE: /run/secrets/mysql_user  # Secret pour le nom de l'utilisateur
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password
     networks:
       - backend
     ports:
@@ -67,6 +72,16 @@ volumes:
       type: "nfs"
       o: "addr=172.26.1.5,nolock,soft,rw"
       device: ":/var/nfs_share/srv11"
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
+  mysql_user_password:
+    file: ./secrets/mysql_user_password.txt
+  mysql_database:  # Nouveau secret pour la base de données
+    file: ./secrets/mysql_database.txt
+  mysql_user:  # Nouveau secret pour l'utilisateur MySQL
+    file: ./secrets/mysql_user.txt
 
 networks:
   frontend:
