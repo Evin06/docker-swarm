@@ -1,61 +1,29 @@
 <?php
 /**
- * Il file base di configurazione di WordPress.
- *
- * Questo file viene utilizzato, durante l’installazione, dallo script
- * di creazione di wp-config.php. Non è necessario utilizzarlo solo via
- * web, è anche possibile copiare questo file in «wp-config.php» e
- * riempire i valori corretti.
- *
- * Questo file definisce le seguenti configurazioni:
- *
- * * Impostazioni MySQL
- * * Prefisso Tabella
- * * Chiavi Segrete
- * * ABSPATH
- *
- * È possibile trovare ultetriori informazioni visitando la pagina del Codex:
- *
- * @link https://codex.wordpress.org/it:Modificare_wp-config.php
- *
- * È possibile ottenere le impostazioni per MySQL dal proprio fornitore di hosting.
- *
- * @package WordPress
+ * Fichier de configuration de base pour WordPress.
  */
 
-// ADS
+// ** Paramètres MySQL ** //
+define('DB_NAME', getenv('WORDPRESS_DB_NAME') ?: 'db_swarm');
 
-define('SKIN_ENABLED', false);
-define('ADS_ENABLED', false);
+/** Nom utilisateur de la base de données */
+define('DB_USER', getenv('WORDPRESS_DB_USER') ?: 'swarm');
 
-// ** Impostazioni MySQL - È possibile ottenere queste informazioni dal proprio fornitore di hosting ** //
+/** Mot de passe de la base de données */
+define('DB_PASSWORD', file_get_contents('/run/secrets/db_password'));
 
-/** Il nome del database di WordPress */
-define('DB_NAME', 'wordpress');
+/** Hôte de la base de données MySQL */
+define('DB_HOST', getenv('WORDPRESS_DB_HOST') ?: 'db:3306');
 
-/** Nome utente del database MySQL */
-define('DB_USER', 'wp_user');
-
-/** Password del database MySQL */
-define('DB_PASSWORD', 'password_for_wp_user');
-
-/** Hostname MySQL  */
-define('DB_HOST', 'mariadb');
-
-/** Charset del Database da utilizzare nella creazione delle tabelle. */
+/** Jeu de caractères de la base de données */
 define('DB_CHARSET', 'utf8');
 
-/** Il tipo di Collazione del Database. Da non modificare se non si ha idea di cosa sia. */
+/** Type de collation de la base de données */
 define('DB_COLLATE', '');
 
 /**#@+
- * Chiavi Univoche di Autenticazione e di Salatura.
- *
- * Modificarle con frasi univoche differenti!
- * È possibile generare tali chiavi utilizzando {@link https://api.wordpress.org/secret-key/1.1/salt/ servizio di chiavi-segrete di WordPress.org}
- * È possibile cambiare queste chiavi in qualsiasi momento, per invalidare tuttii cookie esistenti. Ciò forzerà tutti gli utenti ad effettuare nuovamente il login.
- *
- * @since 2.6.0
+ * Clés uniques d'authentification et de salage.
+ * Remplacez ces valeurs par celles générées par WordPress : https://api.wordpress.org/secret-key/1.1/salt/
  */
 define('AUTH_KEY',         '-T(gIfxU,?952-fx&:dKxli;yws7LRi:5v0+m[+0ZtF?ZY{v*kmF:|)B%0]~$m11');
 define('SECURE_AUTH_KEY',  '|a4#6kRTCFG+5]i?[iY^E{+|nQxA!E6||V>EqjIE%-Bk2`j_5~a)X7]( X(9`ssc');
@@ -68,42 +36,19 @@ define('NONCE_SALT',       'e)Swo+i}++r,7|@43-!LtOD3$H;8~&LVrr?4aJW#[5ZUM/Vy D~@
 
 /**#@-*/
 
-/**
- * Prefisso Tabella del Database WordPress.
- *
- * È possibile avere installazioni multiple su di un unico database
- * fornendo a ciascuna installazione un prefisso univoco.
- * Solo numeri, lettere e sottolineatura!
- */
-$table_prefix  = 'wp_';
+/** Préfixe des tables dans la base de données */
+$table_prefix = 'wp_';
 
-/**
- * Per gli sviluppatori: modalità di debug di WordPress.
- *
- * Modificare questa voce a TRUE per abilitare la visualizzazione degli avvisi
- * durante lo sviluppo.
- * È fortemente raccomandato agli svilupaptori di temi e plugin di utilizare
- * WP_DEBUG all’interno dei loro ambienti di sviluppo.
- */
+/** Mode de débogage */
 define('WP_DEBUG', false);
 
-
-/** Disabilita revisioni (max 3) **/
-define('AUTOSAVE_INTERVAL', 300 ); // seconds
-define('WP_POST_REVISIONS', 3 );
-
-/** disabilita modifica file **/
+/** Désactiver l'édition de fichiers dans le tableau de bord */
 define('DISALLOW_FILE_EDIT', true);
 
-/** Path assoluto alla directory di WordPress. */
-if ( !defined('ABSPATH') )
+/** Spécifier le chemin absolu à la racine de WordPress */
+if (!defined('ABSPATH')) {
     define('ABSPATH', dirname(__FILE__) . '/');
+}
 
-// if ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') $_SERVER['HTTPS']='on';
-
-
-/** Imposta le variabili di WordPress ed include i file. */
+/** Inclure les fichiers WordPress */
 require_once(ABSPATH . 'wp-settings.php');
-
-/** Upload file e plugin diretto senza passare per FTP **/
-define('FS_METHOD', 'direct');
