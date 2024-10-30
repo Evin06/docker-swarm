@@ -1,96 +1,66 @@
 version: '3.8'
-
 services:
   db:
-    image: mariadb:11.2  # Image de la base de données MariaDB
+    image: mariadb:10
     deploy:
-      replicas: 1  # Nombre de répliques du conteneur de base de données
+      replicas: 1
       restart_policy:
-        condition: any  # Redémarrage automatique pour toute condition d'erreur
+        condition: any
       placement:
         constraints:
-          - node.role == manager  # Contrainte pour exécuter ce conteneur uniquement sur les nœuds managers
+          - node.role == manager
     volumes:
-      - db_data:/var/lib/mysql  # Volume persistant pour stocker les données MySQL
+      - db_data:/var/lib/mysql
     secrets:
-      - mysql_root_password       # Secret pour le mot de passe root
-      - mysql_user_password       # Secret pour le mot de passe utilisateur
-      - mysql_database            # Secret pour le nom de la base de données
-      - mysql_user                # Secret pour le nom de l'utilisateur
+      - mysql_root_password
+      - mysql_user_password
+      - mysql_database  # Secret pour le nom de la base de données
+      - mysql_user      # Secret pour l'utilisateur
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password  # Chemin du fichier secret pour le mot de passe root
-      MYSQL_DATABASE_FILE: /run/secrets/mysql_database            # Chemin du fichier secret pour le nom de la base de données
-      MYSQL_USER_FILE: /run/secrets/mysql_user                    # Chemin du fichier secret pour le nom de l'utilisateur
-      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password       # Chemin du fichier secret pour le mot de passe utilisateur
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE_FILE: /run/secrets/mysql_database  # Secret pour le nom de la DB
+      MYSQL_USER_FILE: /run/secrets/mysql_user  # Secret pour le nom de l'utilisateur
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password
     networks:
-      - backend  # Réseau pour la communication interne entre les services
+      - backend
     ports:
-      - "3306:3306"  # Expose le port 3306 pour accéder à MySQL depuis l'extérieur du conteneur
+      - "3306:3306"  # Ouvrir le port 3306 pour MySQL
 
   wordpress-php-fpm:
-    image: wordpress:php7.4-fpm  # Image WordPress avec PHP 7.4 et FastCGI Process Manager
+    image: wordpress:php7.4-fpm
     deploy:
-      replicas: 2  # Nombre de répliques pour la haute disponibilité
+      replicas: 2
       restart_policy:
-        condition: any  # Redémarrage automatique pour toute condition d'erreur
+        condition: any
     volumes:
-      - wordpress_data:/var/www/html  # Volume pour les fichiers WordPress
-      - nfs_data:/var/www/nfs         # Volume NFS partagé (par exemple, pour les uploads)
+      - wordpress_data:/var/www/html
+      - nfs_data:/var/www/nfs  # Ajout du volume NFS
     networks:
-      - frontend  # Réseau externe pour les connexions externes
-      - backend   # Réseau interne pour la connexion à la base de données
+      - frontend
+      - backend
     ports:
-      - "8081:80"  # Expose le port 80 du conteneur en tant que port 8081 sur la machine hôte
-    environment:  # Variables d'environnement pour la configuration de WordPress
-      WORDPRESS_DB_NAME: db_swarm        # Nom de la base de données
-      WORDPRESS_DB_USER: swarm           # Nom de l'utilisateur de la base de données
-      WORDPRESS_DB_PASSWORD: root        # Mot de passe de la base de données
-      WORDPRESS_DB_HOST: db:3306         # Hôte de la base de données (service "db")
+      - "8081:80"
+    environment:  # Variables d'environnement pour WordPress
+      WORDPRESS_DB_NAME: db_swarm  # Nom de la base de données
+      WORDPRESS_DB_USER: swarm  # Nom de l'utilisateur
+      WORDPRESS_DB_PASSWORD: root
+      WORDPRESS_DB_HOST: db:3306  # Hôte de la base de données
     secrets:
-      - mysql_user_password  # Utilisation du secret pour sécuriser le mot de passe utilisateur
+      - mysql_user_password  # Utiliser le secret pour le mot de passe
 
   nginx:
-    image: nginx:alpine  # Image de serveur NGINX légère
+    image: nginx:alpine
     deploy:
-      replicas: 2  # Nombre de répliques pour équilibrer la charge
+      replicas: 2
       restart_policy:
-        condition: any  # Redémarrage automatique pour toute condition d'erreur
+        condition: any
     volumes:
-      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf  # Configuration NGINX locale liée au conteneur
-      - wordpress_data:/var/www/html                   # Partage du volume WordPress pour servir le contenu
-      - nfs_data:/var/www/nfs                          # Volume NFS partagé pour les uploads
-      - ./log/nginx:/var/log/nginx                     # Dossier local pour stocker les logs NGINX
+      - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - wordpress_data:/var/www/html
+      - nfs_data:/var/www/nfs  # Ajout du volume NFS
+      - ./log/nginx:/var/log/nginx
     ports:
-      - "8080:80"  # Expose le port 80 du conteneur en tant que port 8080 sur la machine hôte
+      - "8080:80"  # Port 80 exposé à la machine locale
     networks:
-      - frontend  # Réseau externe pour les connexions externes
-      - backend   # Réseau interne pour communiquer avec WordPress
-
-volumes:
-  db_data:  # Volume persistant pour les données MySQL
-  wordpress_data:
-    driver: local
-    driver_opts:
-      type: "nfs"                  # Type de stockage (NFS)
-      o: "addr=172.26.1.5,nolock,soft,rw"  # Options de montage NFS
-      device: ":/var/nfs_share/srv11"  # Chemin du partage NFS sur le serveur
-  nfs_data:  # Volume NFS partagé pour les fichiers WordPress (uploads)
-    driver: local
-    driver_opts:
-      type: "nfs"                  # Type de stockage (NFS)
-      o: "addr=172.26.1.5,nolock,soft,rw"  # Options de montage NFS
-      device: ":/var/nfs_share/srv11"  # Chemin du partage NFS sur le serveur
-
-secrets:
-  mysql_root_password:
-    file: ./secrets/mysql_root_password.txt  # Fichier contenant le mot de passe root
-  mysql_user_password:
-    file: ./secrets/mysql_user_password.txt  # Fichier contenant le mot de passe de l'utilisateur
-  mysql_database:
-    file: ./secrets/mysql_database.txt  # Fichier contenant le nom de la base de données
-  mysql_user:
-    file: ./secrets/mysql_user.txt  # Fichier contenant le nom de l'utilisateur
-
-networks:
-  frontend:  # Réseau pour les services exposés publiquement (WordPress et NGINX)
-  backend:   # Réseau interne pour les services de base de données et WordPress
+      - frontend
+      - backend
