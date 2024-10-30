@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: mariadb:10  # Image de la base de données MariaDB
+    image: mariadb:11.2  # Image de la base de données MariaDB
     deploy:
       replicas: 1  # Nombre de répliques du conteneur de base de données
       restart_policy:
