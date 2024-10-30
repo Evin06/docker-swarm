@@ -2,7 +2,7 @@ version: '3.8'  # Version du format de fichier Docker Compose
 
 services:
   db:
-    image: mariadb:10  # Utilisation de l'image mariadb version 10 pour la base de données
+    image: mariadb:10  
     deploy:
       replicas: 1  # Une seule réplique du service DB (base de données)
       restart_policy:
