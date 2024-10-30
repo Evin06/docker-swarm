@@ -64,3 +64,32 @@ services:
     networks:
       - frontend
       - backend
+
+volumes:
+  db_data:
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=172.26.1.5,nolock,soft,rw"
+      device: ":/var/nfs_share/srv11"
+  nfs_data:  # Ajout du volume NFS
+    driver: local
+    driver_opts:
+      type: "nfs"
+      o: "addr=172.26.1.5,nolock,soft,rw"
+      device: ":/var/nfs_share/srv11"
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
+  mysql_user_password:
+    file: ./secrets/mysql_user_password.txt
+  mysql_database:
+    file: ./secrets/mysql_database.txt
+  mysql_user:
+    file: ./secrets/mysql_user.txt
+
+networks:
+  frontend:
+  backend:
