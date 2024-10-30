@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   db:
-    image: mariadb:10
+    image: mariadb:11.2
     deploy:
       replicas: 1
       restart_policy:
